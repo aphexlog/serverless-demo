@@ -1,6 +1,4 @@
-org: aphexlog
-app: serverless-demo
-service: aws-python-project
+service: aws-python-project-testing-2
 
 frameworkVersion: '3'
 
@@ -11,3 +9,37 @@ provider:
 functions:
   hello:
     handler: handler.hello
+    environment:
+      DYNAMODB_TABLE_NAME: !Ref HelloWorldBucket
+      S3_BUCKET_ARN: !GetAtt HelloWorldBucket.Arn
+
+resources:
+  Resources:
+    MyDynamoDbTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: !Sub ${AWS::StackName}-helloworld-table
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    HelloWorldBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: !Sub ${AWS::StackName}-helloworld-bucket
+
+  Outputs:
+    HelloWorldBucket:
+      Value: !Ref HelloWorldBucket
+      Export:
+        Name: !Sub ${AWS::StackName}-helloworld-bucket
+
+    MyDynamoDbTable:
+      Value: !Ref MyDynamoDbTable
+      Export:
+        Name: !Sub ${AWS::StackName}-helloworld-table
